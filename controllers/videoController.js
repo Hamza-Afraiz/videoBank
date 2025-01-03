@@ -6,7 +6,9 @@ const {
   DatabaseError,
 } = require("../utils/CustomErrors");
 const { response } = require("../helpers/csvHelper");
-
+const multer = require("multer");
+const storage = multer.memoryStorage(); // Store file in memory
+const upload = multer({ storage: storage }).single("file"); // Expect a single fil
 const getAllVideoLinks = async (req, res) => {
   const userId = req.user.id;
   const { export: exportCsv } = req.query;
@@ -143,6 +145,28 @@ const deleteVideo = async (req, res) => {
     return res.status(error.statusCode || 500).json({ message: error.message });
   }
 };
+const importVideos = async (req, res) => {
+  // Use multer to handle the file upload
+  upload(req, res, async (err) => {
+    if (err) {
+      return res.status(500).json({ message: "Error uploading file." });
+    }
+
+    // The uploaded file is available in req.file
+    const fileBuffer = req.file.buffer; // Get the file buffer
+
+    try {
+      // Pass the buffer to the import function
+      const count = await videoService.importVideosFromCSV(fileBuffer);
+      return res
+        .status(200)
+        .json({ message: `${count} videos imported successfully.` });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: error.message });
+    }
+  });
+};
 
 module.exports = {
   getAllVideoLinks,
@@ -151,4 +175,5 @@ module.exports = {
   createVideo,
   updateVideo,
   deleteVideo,
+  importVideos,
 };

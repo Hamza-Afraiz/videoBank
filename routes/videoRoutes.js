@@ -10,5 +10,6 @@ router.get("/:id", videoController.getVideoById);
 router.post("/", videoController.createVideo);
 router.put("/:id", videoController.updateVideo);
 router.delete("/:id", videoController.deleteVideo);
+router.post("/import", videoController.importVideos);
 
 module.exports = router;
