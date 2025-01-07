@@ -2,7 +2,9 @@ const jwt = require("jsonwebtoken");
 
 const authMiddleware = (req, res, next) => {
   const token = req.header("Authorization")?.split(" ")[1]; // Extract token from header
-
+  if (req.path === "/" || req.path.startsWith("/api/public-data")) {
+    return next(); // Skip authentication for these routes
+  }
   if (!token) {
     return res
       .status(401)

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User Count Tracker</title>
+    <!-- Load Socket.IO client script -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.8.1/socket.io.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        // Connect to the Socket.IO server at the specified URL
+        const socket = io("http://localhost:5001");
+
+        // Handle connection success
+        socket.on("connect", () => {
+          console.log("Connected to the Socket.IO server");
+        });
+
+        // Listen for user count updates
+        socket.on("userCount", (data) => {
+          console.log("Received user count update:", data);
+          document.getElementById(
+            "userCount"
+          ).innerText = `Current Number of Users: ${data.count}`;
+        });
+
+        // Handle connection errors
+        socket.on("connect_error", (err) => {
+          console.error("Connection error:", err);
+          document.getElementById("userCount").innerText =
+            "Error connecting to the server.";
+        });
+
+        // Handle server disconnection
+        socket.on("disconnect", () => {
+          console.log("Disconnected from the server");
+          document.getElementById("userCount").innerText =
+            "Disconnected from the server.";
+        });
+      });
+    </script>
+  </head>
+  <body>
+    <h1>User Count Tracker</h1>
+    <div id="userCount" style="font-size: 1.5em; margin-top: 20px">
+      Current Number of Users: 0
+    </div>
+  </body>
+</html>

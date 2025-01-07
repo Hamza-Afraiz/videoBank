@@ -1,9 +1,44 @@
-const { Video, Follow } = require("../models");
+const { Video, Follow, User } = require("../models");
 const Sequelize = require("sequelize");
 const fs = require("fs");
 const csv = require("csv-parser");
 
 const Op = Sequelize.Op;
+const getRandomUserId = async () => {
+  const users = await User.findAll({ attributes: ["id"] }); // Fetch all user IDs
+  if (users.length === 0) {
+    throw new Error("No users found in the database.");
+  }
+  const randomIndex = Math.floor(Math.random() * users.length); // Get a random index
+  return users[randomIndex].id; // Return the random user ID
+};
+
+const generateRandomVideo = async () => {
+  const randomVideoLink = `https://example.com/video/${Math.floor(
+    Math.random() * 1000
+  )}`; // Generate a random video link
+  const randomVisibility = Math.random() < 0.5 ? "public" : "private"; // Randomly choose visibility
+  const randomSource = ["YouTube", "Facebook", "Instagram"][
+    Math.floor(Math.random() * 3)
+  ]; // Randomly choose source
+
+  try {
+    const userId = await getRandomUserId(); // Get a random user ID from the database
+
+    const videoData = {
+      user_id: userId, // Use the random user ID
+      video_link: randomVideoLink,
+      visibility: randomVisibility,
+      source: randomSource,
+      created_at: new Date(),
+    };
+
+    await createVideo(videoData); // Call the service to create a video
+    console.log(`Added video: ${randomVideoLink} for user ID: ${userId}`);
+  } catch (error) {
+    console.error("Error adding video:", error);
+  }
+};
 
 const getAllVideoLinks = async (userId) => {
   try {
@@ -114,4 +149,5 @@ module.exports = {
   updateVideo,
   deleteVideo,
   importVideosFromCSV,
+  generateRandomVideo,
 };

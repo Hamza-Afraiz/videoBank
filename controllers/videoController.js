@@ -5,10 +5,29 @@ const {
   AuthorizationError,
   DatabaseError,
 } = require("../utils/CustomErrors");
+const videoQueue = require("../queues/videoQueues");
+
 const { response } = require("../helpers/csvHelper");
 const multer = require("multer");
 const storage = multer.memoryStorage(); // Store file in memory
-const upload = multer({ storage: storage }).single("file"); // Expect a single fil
+const upload = multer({ storage: storage }).single("file");
+
+const importVideosToQueue = async (req, res) => {
+  upload(req, res, async (err) => {
+    if (err) {
+      return res.status(500).json({ message: "Error uploading file." });
+    }
+
+    const fileBuffer = req.file.buffer; // Get the file buffer
+
+    // Add a job to the queue
+    await videoQueue.add({ fileBuffer });
+
+    return res
+      .status(200)
+      .json({ message: "Video import job added to the queue." });
+  });
+}; // Expect a single fil
 const getAllVideoLinks = async (req, res) => {
   const userId = req.user.id;
   const { export: exportCsv } = req.query;
@@ -176,4 +195,5 @@ module.exports = {
   updateVideo,
   deleteVideo,
   importVideos,
+  importVideosToQueue,
 };
